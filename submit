@@ -1,0 +1,15 @@
+#!/bin/bash
+
+mkdir -p /tmp/A1/
+rm /tmp/A1/*.java
+rm /tmp/A1/*.zip
+for src in \
+    A1/tai-e/src/main/java/pascal/taie/analysis/dataflow/analysis/LiveVariableAnalysis.java \
+    A1/tai-e/src/main/java/pascal/taie/analysis/dataflow/solver/Solver.java                 \
+    A1/tai-e/src/main/java/pascal/taie/analysis/dataflow/solver/IterativeSolver.java
+do
+    cp $src /tmp/A1/$(basename $src)
+done
+cd /tmp/A1/
+zip A1.zip *.java
+
