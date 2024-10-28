@@ -22,6 +22,11 @@
 
 package pascal.taie.analysis.dataflow.solver;
 
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.Queue;
+import java.util.function.Predicate;
+
 import pascal.taie.analysis.dataflow.analysis.DataflowAnalysis;
 import pascal.taie.analysis.dataflow.fact.DataflowResult;
 import pascal.taie.analysis.graph.cfg.CFG;
@@ -34,11 +39,53 @@ class WorkListSolver<Node, Fact> extends Solver<Node, Fact> {
 
     @Override
     protected void doSolveForward(CFG<Node> cfg, DataflowResult<Node, Fact> result) {
-        // TODO - finish me
+        Queue<Node> queue = new LinkedList<>(cfg.getNodes());
+        HashSet<Node> vis = new HashSet<>(cfg.getNodes());
+        while (!queue.isEmpty()) {
+            Node front = queue.remove();
+            vis.remove(front);
+            Fact outFact = result.getOutFact(front);
+            Fact inFact = result.getInFact(front);
+            for (var predecessor : cfg.getPredsOf(front)) {
+                analysis.meetInto(result.getOutFact(predecessor), inFact);
+            }
+            result.setInFact(front, inFact);
+            if (!analysis.transferNode(front, inFact, outFact)) {
+                continue;
+            }
+            result.setOutFact(front, outFact);
+            cfg.getSuccsOf(front).stream()
+                    .filter(Predicate.not(vis::contains))
+                    .forEach(node -> {
+                        queue.add(node);
+                        vis.add(node);
+                    });
+        }
     }
 
     @Override
     protected void doSolveBackward(CFG<Node> cfg, DataflowResult<Node, Fact> result) {
-        // TODO - finish me
+        Queue<Node> queue = new LinkedList<>(cfg.getNodes());
+        HashSet<Node> vis = new HashSet<>(cfg.getNodes());
+        while (!queue.isEmpty()) {
+            Node front = queue.remove();
+            vis.remove(front);
+            Fact outFact = result.getOutFact(front);
+            Fact inFact = result.getInFact(front);
+            for (var successor : cfg.getSuccsOf(front)) {
+                analysis.meetInto(result.getInFact(successor), outFact);
+            }
+            result.setOutFact(front, outFact);
+            if (!analysis.transferNode(front, outFact, inFact)) {
+                continue;
+            }
+            result.setInFact(front, inFact);
+            cfg.getPredsOf(front).stream()
+                    .filter(Predicate.not(vis::contains))
+                    .forEach(node -> {
+                        queue.add(node);
+                        vis.add(node);
+                    });
+        }
     }
 }

@@ -15,6 +15,9 @@ SUBMIT_FILES = {
         'tai-e/src/main/java/pascal/taie/analysis/dataflow/solver/Solver.java',
         'tai-e/src/main/java/pascal/taie/analysis/dataflow/solver/WorkListSolver.java',
     ],
+    'A3': [
+        'tai-e/src/main/java/pascal/taie/analysis/dataflow/analysis/DeadCodeDetection.java',
+    ],
 }
 
 def compress(hw):

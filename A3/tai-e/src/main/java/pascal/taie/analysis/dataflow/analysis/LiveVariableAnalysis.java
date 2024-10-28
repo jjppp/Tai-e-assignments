@@ -47,24 +47,37 @@ public class LiveVariableAnalysis extends
 
     @Override
     public SetFact<Var> newBoundaryFact(CFG<Stmt> cfg) {
-        // TODO - finish me
-        return null;
+        return new SetFact<>();
     }
 
     @Override
     public SetFact<Var> newInitialFact() {
-        // TODO - finish me
-        return null;
+        return new SetFact<>();
     }
 
     @Override
     public void meetInto(SetFact<Var> fact, SetFact<Var> target) {
-        // TODO - finish me
+        target.union(fact);
     }
 
     @Override
     public boolean transferNode(Stmt stmt, SetFact<Var> in, SetFact<Var> out) {
-        // TODO - finish me
-        return false;
+        SetFact<Var> tmpOut = out.copy();
+        out.clear();
+        out.union(in);
+        var uses = stmt.getUses();
+        var defines = stmt.getDef();
+        if (defines.isPresent()) {
+            if (defines.get() instanceof Var v) {
+                out.remove(v);
+            }
+        }
+
+        for (var x : uses) {
+            if (x instanceof Var) {
+                out.add((Var) x);
+            }
+        }
+        return !(out.equals(tmpOut));
     }
 }
